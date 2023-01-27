@@ -1,7 +1,7 @@
 const express = require('express')
 const app = express()
 const cors = require('cors')
-const { registerUser, checkCredentials, getUsers, reportQuery } = require('./queries.js')
+const { registerUser, checkCredentials, getUser, prepareHATEOAS, reportQuery } = require('./queries.js')
 const jwt = require("jsonwebtoken")
 
 app.listen(3000, console.log("SERVER ONNNNN =)!!!"))
@@ -36,9 +36,10 @@ app.get("/usuarios", reportQuery, async (req, res) => {
         const token = Authorization.split("Bearer ")[1]
         jwt.verify(token, "az_AZ")
         const { email} = jwt.decode(token)
-        const users = await getUsers()
-        res.json(users)
-        res.send(`El Usuario ${email} existe :DD!!`)
+        const user = await getUser(email)
+        const HATEOAS = await prepareHATEOAS(user)
+        res.json(HATEOAS)
+        // res.send(`El Usuario ${email} existe :DD!!`)
     } catch (error) {
         res.status(error.code || 500).send(error)
     }

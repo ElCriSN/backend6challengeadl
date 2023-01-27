@@ -21,18 +21,29 @@ const checkCredentials = async (email, password) => {
     const values = [email]
     const query = "SELECT * FROM usuarios WHERE email = $1"
 
-    const { rows: [usuario], rowCount} = await pool.query(query, values)
+    const { rows: [usuario], rowCount } = await pool.query(query, values)
     const { password: encriptedPassword } = usuario
-    
+
     const correctPassword = bcrypt.compareSync(password, encriptedPassword)
-    
+
     if (!correctPassword || !rowCount)
         throw { code: 401, message: "Email or Password Incorrect =)!!" }
 }
 
-const getUsers = async () => {
-    const { rows: users}= await pool.query("SELECT * FROM usuarios")
-    return users
+const getUser = async (email) => {
+    const values = [email]
+    const query = "SELECT * FROM usuarios WHERE email = $1"
+    const { rows: user } = await pool.query(query, values)
+    return user
+}
+
+const prepareHATEOAS = async (user) => {
+    const result = {
+        email: user[0]["email"],
+        rol: user[0]["rol"],
+        lenguage: user[0]["lenguage"]
+    }
+    return result
 }
 
 const reportQuery = async (req, res, next) => {
@@ -45,4 +56,4 @@ const reportQuery = async (req, res, next) => {
     `, par)
     next()
 }
-module.exports = { registerUser, checkCredentials, getUsers, reportQuery }
+module.exports = { registerUser, checkCredentials, getUser, prepareHATEOAS, reportQuery }
